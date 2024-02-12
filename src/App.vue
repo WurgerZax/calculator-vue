@@ -7,7 +7,7 @@
           <img src="./assets/logo.png" class="tw-w-8 tw-h-8 tw-cursor-pointer tw-transition-all" :class="[darkTheme ? '' : 'tw-brightness-80 tw-hue-rotate-60 tw-rotate-180' ]" @click="darkTheme=!darkTheme"/>
           <div class="tw-flex tw-flex-col tw-w-11/12 tw-gap-3">
             <p class="tw-text-xs tw-text-right tw-transition-all">{{ currentOperation }}</p>
-            <p class="tw-text-xl tw-text-right">{{ currentResult }}</p>
+            <p class="tw-text-xl tw-text-right" :class="currentResult === 'Write correct operation' ? 'tw-text-red-500' : ''">{{ currentResult }}</p>
           </div>
         </div>
         <div class="tw-flex tw-flex-wrap tw-justify-center tw-gap-3 tw-bg-base-100 tw-w-full tw-h-3/4 tw-p-2 tw-rounded-lg">
@@ -70,38 +70,15 @@ export default defineComponent({
           break;
         }
         case '=':{
-          const operator = this.currentOperation.match(/[+\-*/]/);
-          if (operator) {
-            const parts = this.currentOperation.split(operator[0]);
-            if (parts.length === 2) {
-              const leftOperand = parseFloat(parts[0]);
-              const rightOperand = parseFloat(parts[1]);
-              let result;
-
-              switch (operator[0]) {
-                case '+':{
-                  result = leftOperand + rightOperand;
-                  break;
-                } 
-                case '-':{
-                  result = leftOperand - rightOperand;
-                  break;
-                }   
-                case '*':{
-                  result = leftOperand * rightOperand;
-                  break;
-                }   
-                case '/':{
-                  result = leftOperand / rightOperand;
-                  break;
-                }
-                default:{
-                  result = "Invalid operator";
-                }
-              }
-              this.currentResult = result.toString();
+          try{
+            this.currentResult = eval(this.currentOperation);
+            this.currentOperation = '';
+          } catch{
+            this.currentResult = 'Write correct operation';
+            setTimeout(()=>{
+              this.currentResult = '';
               this.currentOperation = '';
-            }
+            }, 1500);
           }
           break;
         }
@@ -116,9 +93,6 @@ export default defineComponent({
             return;
           }
           if(this.currentOperation === '' && (value === '*' || value === '/' || value === '+' || value === '-')) return;
-          if (this.currentOperation.includes('*') || this.currentOperation.includes('/') || this.currentOperation.includes('+') || this.currentOperation.includes('-')) {
-            if (value === '*' || value === '/' || value === '+' || value === '-') return;
-          }
           if ((value === '.' || value === '*' || value === '/' || value === '+' || value === '-') && this.currentOperation.slice(-1) === '.') return;
           this.currentOperation += value;
           return;
